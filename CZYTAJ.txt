@@ -1,0 +1,4 @@
+URUCHOMIENIE
+Otwórz index.html w przeglądarce. Aplikacja działa lokalnie bez instalacji.
+Działa: galeria 8 scen, paleta 16 profili PRISMATIC, przybliżona zmiana kolorów ram w scenach 03 i 05, koloru dachu, fragmentu elewacji i nieba w scenie 03; zapis i wczytywanie JSON; stan w adresie; druk i zapis PDF przez okno drukowania.
+Ograniczenia: ręczne obrysy są robocze, zmiana koloru nie odwzorowuje faktury okleiny. Pozostałe sceny są referencyjne. Brak geometrii innych modeli, wymiany fotograficznego tła, pełnej palety języków, niezależnego generatora PDF i pełnej zgodności z Aluplast. Napis OKNOPLAST jest tekstowym oznaczeniem, nie oficjalnym plikiem logo.
