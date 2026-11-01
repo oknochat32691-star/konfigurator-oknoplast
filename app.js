@@ -18,6 +18,8 @@ geometry[1]={windows:[
 ].join(' ')};
 // Retain source shading and grain instead of covering profiles with flat paint.
 geometry[3].windows='M399 831H652V1028H399Z M413 842V1016H475V842Z M497 842V1016H561V842Z M582 842V1016H642V842Z M1009 796H1352V1059H1009Z M1023 808V1046H1097V808Z M1130 808V1046H1218V808Z M1247 808V1046H1337V808Z';
+// Visible bottom and right frame of the small window behind the timber facade.
+geometry[3].windows+=' M1526 887H1613V848H1625V898H1526Z';
 function profileLayer(path,id){
  if(state.color===null || (state.scene===3 && state.color===6))return '';
  const rgb=hex[state.color].slice(1).match(/../g).map(v=>parseInt(v,16)/255);
@@ -40,4 +42,5 @@ $('#save').onclick=()=>{const a=document.createElement('a');const u=URL.createOb
 $('#load').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>100000)throw Error('Plik jest zbyt duży');state=validate(JSON.parse(await f.text()));sync();renderPanel();$('#status').textContent='Projekt wczytany.';}catch(err){$('#status').textContent='Nie można wczytać projektu: '+err.message;}e.target.value='';};
 $('#share').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('#status').textContent=location.protocol==='file:'?'Skopiowano lokalny link. Zadziała na komputerze z tym folderem.':'Link skopiowany.';}catch(e){$('#status').textContent='Skopiuj adres z paska przeglądarki.';}};
 $('#print').onclick=()=>window.print();renderScene();renderPanel();
+
 
