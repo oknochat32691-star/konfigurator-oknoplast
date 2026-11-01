@@ -1,0 +1,9 @@
+// Kitchen: material samples from manufacturer renders; glazing and handle are excluded.
+geometry[5].windows='M711 324L1249 289V977L711 949Z M739 353L953 340V927L739 917Z M1012 337L1249 324V941L1012 931Z M985 642L997 641V674L991 675V709L978 709V653L985 653Z';
+function kitchenProfileLayer(path,id){
+ const file=PROFILE_COLORS[state.color].file;
+ const sample=(x,y,w,h,horizontal=false,shear=0)=>`<g transform="translate(${x} ${y}) matrix(1 ${shear} 0 1 0 0)"><svg width="${w}" height="${h}" viewBox="${horizontal?'.17 .059 .28 .025':'.104 .17 .035 .64'}" preserveAspectRatio="none" overflow="hidden"><image href="assets/kolory-prismatic/${file}" width="1" height="1" preserveAspectRatio="none"/></svg></g>`;
+ // Separate vertical and horizontal strips prevent stretching grain across the frame.
+ const strips=sample(711,289,30,688)+sample(953,289,59,688)+sample(711,324,538,30,true,-35/538)+sample(711,919,538,31,true,28/538);
+ return `<defs><clipPath id="profileMask"><path d="${path}" clip-rule="evenodd"/></clipPath><filter id="kitchenLight" x="0" y="0" width="1824" height="1368" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="1.18"/><feFuncG type="linear" slope="1.18"/><feFuncB type="linear" slope="1.18"/></feComponentTransfer></filter></defs><g clip-path="url(#profileMask)" style="isolation:isolate" pointer-events="none">${strips}<image href="assets/sceny/scena-${id}.webp" width="1824" height="1368" preserveAspectRatio="none" filter="url(#kitchenLight)" style="mix-blend-mode:multiply"/></g>`;
+}

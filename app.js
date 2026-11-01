@@ -64,4 +64,3 @@ $('#load').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.si
 $('#share').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('#status').textContent=location.protocol==='file:'?'Skopiowano lokalny link. Zadziała na komputerze z tym folderem.':'Link skopiowany.';}catch(e){$('#status').textContent='Skopiuj adres z paska przeglądarki.';}};
 $('#print').onclick=()=>window.print();renderScene();renderPanel();
 
-

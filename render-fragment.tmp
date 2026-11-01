@@ -1,0 +1,10 @@
+// Retain source shading and grain instead of covering profiles with flat paint.
+geometry[3].windows='M399 831H652V1028H399Z M413 842V1016H475V842Z M497 842V1016H561V842Z M582 842V1016H642V842Z M1009 796H1352V1059H1009Z M1023 808V1046H1097V808Z M1130 808V1046H1218V808Z M1247 808V1046H1337V808Z';
+function profileLayer(path,id){
+ if(state.color===null || (state.scene===3 && state.color===6))return '';
+ const rgb=hex[state.color].slice(1).match(/../g).map(v=>parseInt(v,16)/255);
+ const reference=state.scene===5?.74:state.scene===1?.19:.36;
+ const slopes=rgb.map(v=>Math.min(3.4,v/reference));
+ const transfers=slopes.map((v,i)=>`<feFunc${'RGB'[i]} type="linear" slope="${v.toFixed(4)}" intercept="0.012"/>`).join('');
+ return `<defs><clipPath id="profileMask"><path d="${path}" clip-rule="evenodd"/></clipPath><filter id="profileFinish" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer>${transfers}</feComponentTransfer></filter></defs><image href="assets/sceny/scena-${id}.webp" x="0" y="0" width="1824" height="1368" preserveAspectRatio="none" clip-path="url(#profileMask)" filter="url(#profileFinish)" pointer-events="none"/>`;
+}

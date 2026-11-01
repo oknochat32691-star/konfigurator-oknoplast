@@ -1,0 +1,9 @@
+// Exact visible material boundaries in the 1824 x 1368 scene coordinate system.
+geometry[3].roof='M116 789L318 596H1524L1722 787H1528V747H833V789Z';
+geometry[3].facade='M834 756H1524V1062H1360V782H997V1062H834Z';
+function materialLayer(path,color,key,id){
+ const reference=key==='roof'?.59:.66;
+ const channels=color.slice(1).match(/../g).map(v=>parseInt(v,16)/255);
+ const transfer=channels.map((v,i)=>`<feFunc${'RGB'[i]} type="linear" slope="${(v/reference).toFixed(4)}" intercept="0"/>`).join('');
+ return `<defs><clipPath id="${key}Mask"><path d="${path}"/></clipPath><filter id="${key}Finish" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer>${transfer}</feComponentTransfer></filter></defs><image href="assets/sceny/scena-${id}.webp" x="0" y="0" width="1824" height="1368" preserveAspectRatio="none" clip-path="url(#${key}Mask)" filter="url(#${key}Finish)" pointer-events="none"/>`;
+}
