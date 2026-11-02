@@ -31,7 +31,7 @@ function materialLayer(path,color,key,id){
 }
 
 // Kitchen: material samples from manufacturer renders; glazing and handle are excluded.
-geometry[5].windows='M711 324L1249 289V977L711 949Z M739 353L953 340V927L739 917Z M1012 337L1249 324V941L1012 931Z M985 642L997 641V674L991 675V709L978 709V653L985 653Z';
+geometry[5].windows='M711 324L1249 289V977L711 949Z M739 353L953 340V927L739 917Z M1012 337L1249 324V941L1012 931Z';
 function kitchenProfileLayer(path,id){
  const texture=PROFILE_TEXTURES[state.color];
  // Fixed scene-space scale: never stretch a texture to a profile's width.
@@ -81,7 +81,7 @@ function lakesideProfileLayer(){
 
 // Visible profile surfaces, in original 1920x1440 photo coordinates.
 const additionalFrames={4:[],6:[],7:[],8:[]};
-const frameExclusions={4:'M424 1001h9v24h-9Z M1332 990h10v30h-10Z',6:'',7:'',8:'M838 592h19v40h-19Z M1232 552h22v50h-22Z M1853 493h22v63h-22Z M1604 322h13v42h-13Z M1083 413h13v33h-13Z M1600 527L1700 527L1715 560L1668 645L1598 692Z M1630 698L1657 698L1640 767L1612 767Z M1690 696L1708 696L1728 767L1707 767Z'};
+const frameExclusions={4:'',6:'',7:'',8:'M1609 329L1613 329L1613 358L1609 358Z M1088 417L1092 417L1092 441L1088 441Z M1600 527L1700 527L1715 560L1668 645L1598 692Z M1630 698L1657 698L1640 767L1612 767Z M1690 696L1708 696L1728 767L1707 767Z'};
 function profileStrip(scene,d,angle=0){additionalFrames[scene].push({d,angle});}
 function profileBox(scene,x,y,w,h,t=7,mullions=[]){
  profileStrip(scene,`M${x} ${y+t}h${t}v${h-2*t}h${-t}Z M${x+w-t} ${y+t}h${t}v${h-2*t}h${-t}Z`);
@@ -136,6 +136,20 @@ function triangleFoliageMatte(){
  const region=photoPath('M1090 900L1205 900L1205 1054L1090 1054Z M109 983L267 983L267 1143L109 1143Z M1690 996L1750 996L1750 1130L1690 1130Z');
  return '<defs><clipPath id="trianglePlants"><path d="'+region+'"/></clipPath><clipPath id="triangleWall"><path d="'+geometry[4].facade+'"/></clipPath><filter id="plantMatte" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="linear" slope="8" intercept="-4"/><feFuncG type="linear" slope="8" intercept="-4"/><feFuncB type="linear" slope="8" intercept="-4"/></feComponentTransfer></filter></defs><g clip-path="url(#triangleWall)"><image href="assets/sceny/scena-04.webp" width="1824" height="1368" clip-path="url(#trianglePlants)" filter="url(#plantMatte)"/></g>';
 }
+// Hardware contours are independent of finish selection and shared by every renderer.
+// Empty entries mean no exposed hardware intersects the currently painted frame bands.
+const hardwareContours={
+ 1:'',2:'',3:'',
+ 4:'M425 1003L429 1002L430 1004L430 1021L426 1022Z M1334 992L1338 992L1338 1011L1335 1012Z',
+ 5:'M1042 677Q1048 675 1050 679L1050 699Q1049 703 1044 703L1043 742Q1042 747 1037 746Q1034 745 1035 741L1035 689Q1036 686 1042 686Z',
+ 6:'',7:'',
+ 8:'M847 597Q851 595 853 599L853 607Q852 610 849 610L847 607L846 626Q844 630 841 627L841 604Q842 600 847 601Z M1244 558Q1249 556 1251 561L1251 570Q1250 574 1245 574L1244 572L1243 594Q1242 599 1238 597Q1236 596 1236 592L1237 567Q1238 563 1243 564Z M1861 500Q1867 497 1870 502L1870 515Q1869 520 1865 521L1865 544Q1865 549 1860 550Q1856 550 1856 546L1857 510Q1857 506 1861 506Z'
+};
+function protectHardware(markup){
+ const path=hardwareContours[state.scene];
+ if(!markup||!path)return markup;
+ return '<defs><mask id="hardwareProtection" maskUnits="userSpaceOnUse" x="0" y="0" width="1824" height="1368" style="mask-type:luminance"><rect width="1824" height="1368" fill="white"/><path d="'+photoPath(path,state.scene===2?1452:1440)+'" fill="black"/></mask></defs><g mask="url(#hardwareProtection)">'+markup+'</g>';
+}
 function profileLayer(path,id){
  if(state.color===null || (state.scene===3 && state.color===6))return '';
  if(state.scene===5)return kitchenProfileLayer(path,id);
@@ -152,7 +166,7 @@ function profileLayer(path,id){
 function validate(v){if(!v||!Number.isInteger(v.scene)||v.scene<1||v.scene>8)throw Error('Nieprawidłowy obiekt');for(const k of ['facade','roof'])if(v[k]!==null&&!/^#[0-9a-f]{6}$/i.test(v[k]||''))throw Error('Nieprawidłowy kolor');if(v.color!==null&&(!Number.isInteger(v.color)||v.color<0||v.color>=PROFILE_COLORS.length))throw Error('Nieprawidłowy profil');return Object.fromEntries(Object.keys(initial).map(k=>[k,v[k]]));}
 try{if(location.hash)state=validate(JSON.parse(decodeURIComponent(location.hash.slice(1))));}catch(e){$('#status').textContent='Link zawiera nieprawidłową konfigurację.';}
 function sync(){try{history.replaceState(null,'','#'+encodeURIComponent(JSON.stringify(state)));}catch(e){}renderScene();}
-function renderScene(){const id=String(state.scene).padStart(2,'0');$('#house').src=`assets/sceny/scena-${id}.webp`;$('#sceneTitle').textContent=scenes[state.scene-1];$('#summary').textContent=state.color===null?'Oryginalna wizualizacja':`PRISMATIC · ${names[state.color]}`;const g=geometry[state.scene]||{};$('#overlay').innerHTML=Object.entries({roof:state.roof,facade:state.facade,windows:state.color===null?null:hex[state.color]}).filter(([k,v])=>v&&g[k]&&k!=="windows").map(([k,v])=>materialLayer(g[k],v,k,id)).join('')+(g.windows?profileLayer(g.windows,id):'');$('#overlay').onclick=e=>{if(e.target.dataset.layer){tab=e.target.dataset.layer;renderPanel();}};}
+function renderScene(){const id=String(state.scene).padStart(2,'0');$('#house').src=`assets/sceny/scena-${id}.webp`;$('#sceneTitle').textContent=scenes[state.scene-1];$('#summary').textContent=state.color===null?'Oryginalna wizualizacja':`PRISMATIC · ${names[state.color]}`;const g=geometry[state.scene]||{};$('#overlay').innerHTML=Object.entries({roof:state.roof,facade:state.facade,windows:state.color===null?null:hex[state.color]}).filter(([k,v])=>v&&g[k]&&k!=="windows").map(([k,v])=>materialLayer(g[k],v,k,id)).join('')+(g.windows?protectHardware(profileLayer(g.windows,id)):'');$('#overlay').onclick=e=>{if(e.target.dataset.layer){tab=e.target.dataset.layer;renderPanel();}};}
 function renderPanel(){if((tab==='roof'||tab==='facade')&&!geometry[state.scene]?.[tab])tab='scenes';document.querySelector('nav [data-tab=roof]').hidden=!geometry[state.scene]?.roof;document.querySelector('nav [data-tab=facade]').hidden=!geometry[state.scene]?.facade;document.querySelector('nav [data-tab=facade]').textContent=state.scene===5?'Ściany':'Elewacja';document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('selected',b.dataset.tab===tab));let content='';if(tab==='scenes'){content='<h2>Wybierz przestrzeń</h2><p>Sześć domów i dwa wnętrza.</p><div class="grid">'+scenes.map((n,i)=>`<button class="card ${state.scene===i+1?'selected':''}" data-scene="${i+1}"><img src="assets/sceny/scena-${String(i+1).padStart(2,'0')}.webp" alt=""><span>${n}</span></button>`).join('')+'</div>';}else if(tab==='windows'){content='<h2>Kolor okien</h2><p>System PRISMATIC</p><p class="notice">'+(additionalFrames[state.scene]?'Oryginalne tekstury na widocznych profilach. Fragmenty zasłonięte meblami, roślinami, balustradami i żaluzjami pozostają fotograficzne.':state.scene===2?'Tekstury na ramach okien tarasowych. Okna dachowe pozostają oryginalne.':state.scene===1?'Tekstury na widocznych profilach. Fragmenty zasłonięte balustradą pozostają oryginalne.':state.scene===5?'Oryginalne próbki oklein producenta, w stałej skali i z zachowaniem światła wnętrza. Klamka pozostaje w oryginalnym kolorze.':geometry[state.scene]?.windows?'Podgląd zachowuje światło i detale ram. Usłojenie pochodzi ze zdjęcia, nie ze wzornika wybranej okleiny.':'Ta scena jest dostępna jako zdjęcie referencyjne. Zmianę ram możesz sprawdzić na domu parterowym lub w kuchni.')+'</p><button data-original>Oryginalny wygląd</button><div class="grid colors">'+PROFILE_COLORS.map((c,i)=>`<button class="card ${state.color===i?'selected':''}" data-color="${i}" ${geometry[state.scene]?.windows ? "" : "disabled"}><img loading="lazy" src="assets/kolory-prismatic/${c.file}" alt="Profil ${names[i]}"><span>${names[i]}</span></button>`).join('')+'</div>';}else{let titles={facade:state.scene===5?'Kolor ścian':'Wykończenie elewacji',roof:'Kolor dachu'};content=`<h2>${titles[tab]}</h2>`;if(!geometry[state.scene]?.[tab])content+='<p>Zmiana tego elementu jest obecnie przygotowana dla domu parterowego — Orzech.</p><button data-demo>Przejdź do domu parterowego</button>';else content+='<p>Wybierz odcień. Podgląd ma charakter orientacyjny.</p><button data-clear>Oryginalny wygląd</button><div class="swatches">'+['#f2eee5','#bcb6aa','#8a8d8e','#45494c','#b49b7d','#8a5b43','#7896ac','#c6dce8'].map(c=>`<button class="swatch ${state[tab]===c?'selected':''}" style="background:${c}" data-paint="${c}" aria-label="Kolor ${c}"></button>`).join('')+'</div>';}
 $('#panel').innerHTML=content;}
 $('#panel').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.scene){state={...initial,scene:Number(b.dataset.scene)};}else if(b.dataset.color!==undefined){if(!geometry[state.scene]?.windows)return;state.color=Number(b.dataset.color);}else if(b.hasAttribute('data-original'))state.color=null;else if(b.dataset.paint)state[tab]=b.dataset.paint;else if(b.hasAttribute('data-clear'))state[tab]=null;else if(b.hasAttribute('data-demo'))state={...initial};sync();renderPanel();document.querySelector('#status').textContent=state.color===null?'Oryginalny wygląd.':'Wybrany kolor: '+names[state.color];};
